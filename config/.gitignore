@@ -1,0 +1,6 @@
+# Ignore all files in the current directory
+*
+
+# Explicitly include the specific files you want to track
+!config.json.example
+!.gitignore
