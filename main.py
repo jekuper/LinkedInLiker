@@ -12,7 +12,7 @@ def main():
     
     driver = initialize_driver()
     
-    linkedin = Automation(driver, config.username, config.password, config.post_count)
+    linkedin = Automation(driver, config.username, config.password, config.post_count, config.pause_time)
     linkedin.Login()
     linkedin.Interact_with_posts()
     

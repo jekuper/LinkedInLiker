@@ -9,6 +9,7 @@ class Configuration:
         self.username: str = None
         self.password: str = None
         self.manual: bool = None
+        self.pause_time: int = 30
         self.post_count: int = 1
 
         # Load and apply configuration
@@ -50,6 +51,9 @@ class Configuration:
 
         if not isinstance(config_data["post_count"], int):
             raise ValueError("The 'post_count' field must be an int.")
+        
+        if not isinstance(config_data["pause_time"], int):
+            raise ValueError("The 'pause_time' field must be an int.")
 
         if not os.path.exists(config_data["llm_path"]):
             raise FileNotFoundError(f"The path specified in 'llm_path' does not exist: {config_data['llm_path']}")
@@ -61,6 +65,7 @@ class Configuration:
         self.password = config_data["password"]
         self.manual = config_data["manual"]
         self.post_count = config_data["post_count"]
+        self.pause_time = config_data["pause_time"]
 
 # Example usage:
 # config = Configuration('path/to/config.json')

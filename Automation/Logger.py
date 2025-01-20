@@ -57,15 +57,14 @@ def log_warning(step_description, sleep_duration=1):
 def log_error(step_description, sleep_duration=1):
     """Log an error message with stack trace and optionally pause for confirmation."""
     logger = get_logger()
-    if STEP_PAUSE:
-        input(f"Step: {step_description}\nPress Enter to continue...")
-    else:
-        try:
-            # Log the error with a stack trace
-            raise Exception(step_description)
-        except Exception as e:
-            logger.error(f"An error occurred: {step_description}\n{traceback.format_exc()}")
-        time.sleep(sleep_duration)
+    try:
+        # Log the error with a stack trace
+        raise Exception(step_description)
+    except Exception as e:
+        logger.error(f"An error occurred: {step_description}\n{traceback.format_exc()}")
+        if STEP_PAUSE:
+            input()
+    time.sleep(sleep_duration)
 
 # Example Usage
 if __name__ == "__main__":

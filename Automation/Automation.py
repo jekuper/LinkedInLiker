@@ -40,12 +40,13 @@ AVAILABLE_REACTIONS = [
 
 
 class Automation:
-    def __init__(self, driver, email, password, post_count):
+    def __init__(self, driver, email, password, post_count, pause_time):
         self.communicator = LLMCommunicator()
         self.email = email
         self.password = password
         self.driver = driver
         self.post_count = post_count
+        self.pause_time = pause_time
 
     def Login(self):
         """Log in to LinkedIn."""
@@ -74,29 +75,26 @@ class Automation:
     def Process_post(self, post_number):
         try:
             # Locate the post using a dynamic XPath based on post_number
-            post_xpath = f"//h2[contains(text(), 'Feed post number {post_number}')]/.."
+            post_xpath = f"//h2[contains(., 'Feed post number {post_number}')]/following-sibling::*[1]"
             
             # Wait for the element to be visible
-            post_element = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, post_xpath))
-            )
-
-            post_element = post_element.find_element(By.XPATH, "./following-sibling::*")
-
+            post_element = self.driver.find_element(By.XPATH, post_xpath)
+            
             log_info(f"Located post #{post_number}")
 
             # Locate children of the post element
             children = post_element.find_elements(By.XPATH, "./*")
 
             # Check if the post has exactly 5 children
-            if len(children) != 5:
-                log_error("Error: The post does not have exactly 5 children.")
+            if len(children) != 5 and len(children) != 4:
+                log_error("Error: The post does not have exactly 5 or 4 children.")
                 return
             
-            log_info(f"All 5 parts of the post found.")
+            log_info(f"All {len(children)} parts of the post found.")
 
             # Select the second child and call it text_item
             text_item = children[1]
+            interaction_menu = children[2]
 
             # Search for a span with text "...more" within text_item
             more_span = text_item.find_element(By.XPATH, ".//span[text()='…more']")
@@ -113,8 +111,7 @@ class Automation:
             # Scroll the text_item into view
             self.driver.execute_script("arguments[0].scrollIntoView(true);", text_item)
 
-            # Wait for 30 seconds + random time between 0 and 20 seconds
-            wait_time = 30 + random.randint(0, 20)
+            wait_time = self.pause_time + random.randint(0, 20)
 
             log_info(f"Post scrolled into view. Now waiting for {wait_time}")
             time.sleep(wait_time)
@@ -136,8 +133,21 @@ class Automation:
             if len(buttons) != 6:
                 log_error(f"Not all required buttons were found. Found {len(buttons)}")
                 return
+            
+            likes_text = post_element.find_element(By.XPATH, ".//span[contains(@class, 'social-details-social-counts')]")
+            likes = likes_text.get_attribute("innerText")
 
-            selected_button = self.communicator.Get_reaction(inner_text, AVAILABLE_REACTIONS)
+            selected_reaction_label = self.communicator.Get_reaction(inner_text, likes, AVAILABLE_REACTIONS)
+            selected_button = None
+
+            if selected_reaction_label == None:
+                log_info("Not liking this post.")
+                return
+
+            for i in range(len(AVAILABLE_REACTIONS)):
+                if AVAILABLE_REACTIONS[i]["label"] == selected_reaction_label:
+                    selected_button = buttons[i]
+                    break
 
             self.driver.execute_script("arguments[0].click();", selected_button)
 
