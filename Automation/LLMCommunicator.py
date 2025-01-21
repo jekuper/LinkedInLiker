@@ -17,12 +17,12 @@ class LLMCommunicator:
                 if match:
                     likes_count = int(match.group())
                     # Check if the likes count is lower than 20
-                    if likes_count < 20:
-                        return available_reactions[0]["label"]
+                    if likes_count < 50:
+                        return random.choice(available_reactions)["label"]
                     else:
                         # Return available_reactions[0]["label"] with a 10% probability
                         if random.random() < 0.03:
-                            return available_reactions[0]["label"]
+                            return random.choice(available_reactions)["label"]
                         else:
                             return None
             return None

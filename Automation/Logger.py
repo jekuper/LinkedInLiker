@@ -63,7 +63,7 @@ def log_error(step_description, sleep_duration=1):
     except Exception as e:
         logger.error(f"An error occurred: {step_description}\n{traceback.format_exc()}")
         if STEP_PAUSE:
-            input()
+            input("Press Enter to continue...")
     time.sleep(sleep_duration)
 
 # Example Usage

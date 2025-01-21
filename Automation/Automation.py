@@ -72,13 +72,29 @@ class Automation:
         for i in range(1, self.post_count + 1):
             self.Process_post(i)
 
+    def find_post_with_scroll(self, post_number, retries=5):
+        post_xpath = f"//h2[contains(., 'Feed post number {post_number}')]/following-sibling::*[1]"
+
+        for attempt in range(retries):
+            try:
+                # Wait for the element to be visible
+                post_element = self.driver.find_element(By.XPATH, post_xpath)
+                log_info(f"Post found on attempt {attempt + 1}")
+                return post_element
+            except:
+                log_info(f"Post not found on attempt {attempt + 1}. Scrolling down...")
+                # Scroll down the page
+                for _ in range(3):
+                    ActionChains(self.driver).send_keys(Keys.PAGE_DOWN).perform()
+                    time.sleep(1)  # Wait for a second to allow the page to load new content
+
+        log_info("Post not found after multiple attempts.")
+        return None
+
     def Process_post(self, post_number):
-        try:
-            # Locate the post using a dynamic XPath based on post_number
-            post_xpath = f"//h2[contains(., 'Feed post number {post_number}')]/following-sibling::*[1]"
-            
+        try:            
             # Wait for the element to be visible
-            post_element = self.driver.find_element(By.XPATH, post_xpath)
+            post_element = self.find_post_with_scroll(post_number)
             
             log_info(f"Located post #{post_number}")
 
@@ -97,7 +113,11 @@ class Automation:
             interaction_menu = children[2]
 
             # Search for a span with text "...more" within text_item
-            more_span = text_item.find_element(By.XPATH, ".//span[text()='…more']")
+            try:
+                more_span = text_item.find_element(By.XPATH, ".//span[text()='…more']")
+            except Exception as e:
+                log_info("More button not found")
+                more_span = None
 
             if more_span:
                 log_info("'More' button found on this post. Pressing...")
