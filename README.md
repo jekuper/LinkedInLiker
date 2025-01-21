@@ -1,4 +1,4 @@
-# LinkedIn Automation Tool
+# LinkedIn Like Automation Tool
 
 This is a LinkedIn automation tool built using **Python** and **Selenium**. It automates the process of engaging with posts on LinkedIn by:
 
